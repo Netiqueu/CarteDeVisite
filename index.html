@@ -211,7 +211,7 @@
 
     <div id="workspace-wrapper">
         <div id="card-container">
-            <img id="card-logo-bg" src="Fond.png" alt="Fond">
+            <img id="card-logo-bg" src="img/Fond.png" alt="Fond">
              
             <div id="input-header" class="editable" contenteditable="true">alarme  -  telesurveillance  -  videoprotection  -  controle d’acces</div>
             <div id="input-name" class="editable" contenteditable="true">Sandrine JAUBERT</div>
@@ -241,7 +241,7 @@
             const bgImage = document.getElementById('card-logo-bg');
             const editableElements = document.querySelectorAll('.editable');
 
-            const newBgSrc = isModern ? 'NewFond.png' : 'Fond.png';
+            const newBgSrc = isModern ? 'img/NewFond.png' : 'img/Fond.png';
 
             if (isInitialLoad) {
                 bgImage.style.transition = 'none';
@@ -315,4 +315,3 @@
     </script>
 </body>
 </html>
-
