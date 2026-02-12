@@ -42,6 +42,7 @@
 
         /* --- LA CARTE --- */
         #card-container {
+            background-color: white;
             position: relative;
             width: 640px;
             height: 412px;
@@ -205,7 +206,7 @@
     <h1>Cliquez sur n'importe quel texte pour le modifier.</h1>
 
     <div class="modernize-switch">
-        <input type="checkbox" id="modernize-checkbox" checked>
+        <input type="checkbox" id="modernize-checkbox">
         <label for="modernize-checkbox">Moderniser la carte de visite</label>
     </div>
 
@@ -272,7 +273,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const checkbox = document.getElementById('modernize-checkbox');
-            // Set checked state based on HTML attribute to override browser cache
             checkbox.checked = checkbox.hasAttribute('checked');
             updateCardDesign(true);
         });
@@ -283,36 +283,59 @@
             const container = document.getElementById('card-container');
             const scrollPos = window.scrollY;
             
+            // On remonte en haut
             window.scrollTo(0, 0);
             container.classList.add('exporting');
 
             html2canvas(container, {
-                scale: 3,
-                backgroundColor: '#ffffff', // Set a white background for JPG
-                useCORS: true,
-                allowTaint: true,
                 width: 640,
                 height: 412,
+                scale: 1,              // Force l'échelle 1:1 exacte
+                useCORS: true,         // Autorise le chargement des images externes
+                allowTaint: true,
+                backgroundColor: null, // Transparent pour le PNG 32-bit
                 logging: false,
+                
+                // C'est ICI que la magie opère pour éviter le décalage :
                 onclone: (clonedDoc) => {
-                    clonedDoc.getElementById('card-container').style.transform = "none";
+                    const clonedContainer = clonedDoc.getElementById('card-container');
+                    const clonedBody = clonedDoc.body;
+
+                    // 1. On nettoie le body virtuel pour enlever le flexbox et le padding
+                    clonedBody.style.display = 'block';
+                    clonedBody.style.margin = '0';
+                    clonedBody.style.padding = '0';
+                    clonedBody.style.overflow = 'visible'; // S'assure que rien n'est coupé
+
+                    // 2. On force la carte en position absolue à 0,0
+                    clonedContainer.style.position = 'absolute';
+                    clonedContainer.style.top = '0';
+                    clonedContainer.style.left = '0';
+                    clonedContainer.style.margin = '0';
+                    clonedContainer.style.transform = 'none'; // Annule le zoom responsive
+                    
+                    // Sécurité supplémentaire pour l'image de fond
+                    const bg = clonedContainer.querySelector('#card-logo-bg');
+                    if(bg) {
+                        bg.style.top = '0';
+                        bg.style.left = '0';
+                    }
                 }
             }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'carte-ate-' + Date.now() + '.jpg';
-                link.href = canvas.toDataURL('image/jpeg', 0.95); // Export as high-quality JPEG
+                link.download = 'carte-ate-' + Date.now() + '.png';
+                link.href = canvas.toDataURL('image/png'); 
                 link.click();
                 
                 container.classList.remove('exporting');
                 window.scrollTo(0, scrollPos);
             }).catch(err => {
-                console.error("Erreur lors de la génération de l'image:", err);
+                console.error("Erreur export:", err);
                 container.classList.remove('exporting');
                 window.scrollTo(0, scrollPos);
-                alert("Désolé, une erreur est survenue lors de la création de l'image.");
+                alert("Erreur lors de l'export.");
             });
         }
     </script>
 </body>
 </html>
-
